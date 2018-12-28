@@ -268,7 +268,7 @@ angular.module('textAngularSetup', [])
         tooltip: 'Display characters Count'
     }
 })
-.factory('taToolFunctions', ['$window','taTranslations','$uibModal', function($window, taTranslations, $uibModal) {
+.factory('taToolFunctions', ['$window','taTranslations', function($window, taTranslations) {
     return {
         imgOnSelectAction: function(event, $element, editorScope){
             // setup the editor toolbar
@@ -631,8 +631,8 @@ angular.module('textAngularSetup', [])
         }
     };
 }])
-.run(['taRegisterTool', '$window', 'taTranslations', 'taSelection', 'taToolFunctions', '$sanitize', 'taOptions', '$log',
-    function(taRegisterTool, $window, taTranslations, taSelection, taToolFunctions, $sanitize, taOptions, $log){
+.run(['taRegisterTool', '$window', 'taTranslations', 'taSelection', 'taToolFunctions', '$sanitize', 'taOptions', '$log', '$uibModal',
+    function(taRegisterTool, $window, taTranslations, taSelection, taToolFunctions, $sanitize, taOptions, $log, $uibModal){
     // test for the version of $sanitize that is in use
     // You can disable this check by setting taOptions.textAngularSanitize == false
     var gv = {}; $sanitize('', gv);
