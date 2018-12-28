@@ -191,3 +191,69 @@
     border-top-width: 0;
     border-bottom-color: #fff;
 }
+
+.freeTextTable td{
+    border: solid 1px #333;
+}
+
+.tableModalForm{
+    margin: 10px 10px 10px 10px;
+    width: 20%;
+}
+.remRowFreeTextTable{
+    margin-left: 50px;
+}
+
+.deleteFreeTextTable{
+    margin-left: 50px;
+}
+
+.onclick-menu {
+    position: relative;
+    display: inline-block;
+    width:100%;
+}
+
+.onclick-menu:focus .onclick-menu-content {
+    /*  opacity is 1 in opened state (see below) */
+    opacity: 1;
+    visibility: visible;
+
+    /* don't let pointer-events affect descendant elements */
+    pointer-events: auto;
+}
+
+.onclick-menu-content:focus{
+    /*  opacity is 1 in opened state (see below) */
+    opacity: 1;
+    visibility: visible;
+
+    /* don't let pointer-events affect descendant elements */
+    pointer-events: auto;
+}
+
+
+.onclick-menu-content {
+    position: absolute;
+    z-index: 1;
+
+    /* use opacity to fake immediate toggle */
+    opacity: 0;
+    visibility: hidden;
+    transition: visibility 0.5s;
+    width: auto;
+    margin-left: 0;
+    padding-left: 0px;
+
+}
+
+.onclick-menu-content li{
+    color: #333;
+    list-style-type:none;
+    white-space: nowrap;
+}
+
+.ta-resizer-handle-background{
+    background-color: rgba(0,0,0,0) !important;
+    border: none!important;
+}

@@ -144,7 +144,7 @@ angular.module('textAngularSetup', [])
 // This is the element selector string that is used to catch click events within a taBind, prevents the default and $emits a 'ta-element-select' event
 // these are individually used in an angular.element().find() call. What can go here depends on whether you have full jQuery loaded or just jQLite with angularjs.
 // div is only used as div.ta-insert-video caught in filter.
-.value('taSelectableElements', ['a','img'])
+.value('taSelectableElements', ['a','img','table'])
 
 // This is an array of objects with the following options:
 //				selector: <string> a jqLite or jQuery selector string
@@ -375,6 +375,201 @@ angular.module('textAngularSetup', [])
 
             editorScope.showPopover($element);
             editorScope.showResizeOverlay($element);
+        },
+        tableOnSelectAction: function(event, $element, editorScope){
+
+            var finishEdit = function(){
+                editorScope.updateTaBindtaTextElement();
+                editorScope.hidePopover();
+            };
+
+            // event.preventDefault();
+            editorScope.displayElements.popover.css('width', '275px');
+            var container = editorScope.displayElements.popoverContainer;
+            container.empty();
+
+            var tableEditGroup = angular.element('<div class="btn-group tablePopupBtnGroup">');
+            var addRowButton = angular.element('<button type="button" class="btn btn-primary btn-sm btn-small" unselectable="on" tabindex="-1">&nbsp;&nbsp;Add Row&nbsp;</button>');
+
+
+            addRowButton.on('click', function(event){
+                event.preventDefault();
+                var tbody = $element;
+                var colnums = tbody.find("tr:nth-child(1)").children().length;
+                var col = "<td>&nbsp;</td>"
+                var allCols = ""
+                for (var x = 0; x < colnums; x++){
+                    allCols = allCols + col;
+                }
+                var newElem = "<tr>" + allCols + "</tr>";
+
+                $(".tdSelected").parent().after(newElem)
+                $(".tdSelected").removeClass("tdSelected");
+
+                setTimeout(function() {
+                    $("table").off("click", "td");
+                    setTimeout(function() {
+                        $("table").on( "click", "td", function(event) {
+                            $(".tdSelected").removeClass("tdSelected");
+                            $(this).addClass("tdSelected");
+                        });
+                    }, 200);
+                }, 200);
+
+
+                finishEdit();
+            });
+
+
+
+            var addColButton = angular.element('<button type="button" class="btn btn-primary btn-sm btn-small" unselectable="on" tabindex="-1">Add Column</button>');
+
+            addColButton.on('click', function(event){
+                event.preventDefault();
+
+                var tbody = $element;
+                var col = "<td>&nbsp;</td>"
+                console.log($(".tdSelected").index())
+                var childNum = $(".tdSelected").index() + 1
+                tbody.find("tr").each(function(){
+                    $(this).children(":nth-child("+childNum+")").after(col);
+                })
+                var colnums = tbody.find("tr:nth-child(1)").children().length;
+                tbody.find("tr:first").find("td").each(function(){
+                    $(this).width(100 / colnums);
+                })
+
+                setTimeout(function() {
+                    $("table").off("click", "td");
+                    setTimeout(function() {
+                        $("table").on( "click", "td", function(event) {
+                            $(".tdSelected").removeClass("tdSelected");
+                            $(this).addClass("tdSelected");
+                        });
+                    }, 200);
+                }, 200);
+
+
+                finishEdit();
+            });
+
+            var tableEditGroupRemoves = angular.element('<div class="btn-group tablePopupBtnGroup">');
+
+            var remRowButton = angular.element('<button type="button" class="btn btn-warning btn-sm btn-small" unselectable="on" tabindex="-1">&nbsp;&nbsp;Remove Row&nbsp;</button>');
+
+
+            remRowButton.on('click', function(event){
+                // alert("Rem Row " + $element.html());
+                event.preventDefault();
+                var tbody = $element;
+                // var lastrow = tbody.find('tr:last');
+
+                var ourRow = $(".tdSelected").closest('tr')
+                ourRow.remove();
+
+                //Error: Could not complete the operation due to error 800a025e.
+                //Fix for IE throwing the above odd error
+
+                // There is no logic on these errors as we're doing everything right.
+                // So the only solution we found for this is "resetting" the selection API,
+                // by moving the focus to another document (CKEDITOR.document)
+                // and then back to the editable. Fortunately this solved the problem,
+                // even if its a damn ugly hack.
+
+                // $(".focussed").focusout();
+
+                window.focus();
+                if (document.activeElement) {
+                    document.activeElement.blur();
+                }
+                finishEdit();
+            });
+
+
+            var remColButton = angular.element('<button type="button" class="btn btn-warning btn-sm btn-small" unselectable="on" tabindex="-1">Remove Column</button>');
+            remColButton.on('click', function(event){
+                event.preventDefault();
+                var tbody = $element;
+                var childNum = $(".tdSelected").index() + 1
+                tbody.find("tr").each(function(){
+                    $(this).find("td:nth-child("+childNum+")").remove();
+                })
+                window.focus();
+                if (document.activeElement) {
+                    document.activeElement.blur();
+                }
+
+                if (document.body.createTextRange) { // All IE but Edge
+                    var range = document.body.createTextRange();
+                    range.collapse();
+                    range.select();
+                }
+                else {
+                    document.getSelection().removeAllRanges();
+                }
+                finishEdit();
+            });
+
+
+            tableEditGroup.append(addRowButton);
+            tableEditGroup.append(addColButton);
+
+
+
+            tableEditGroupRemoves.append(remRowButton);
+            tableEditGroupRemoves.append(remColButton);
+            container.append(tableEditGroup);
+            container.append(tableEditGroupRemoves);
+
+
+            var buttonGroup = angular.element('<div class="btn-group tablePopupBtnGroup">');
+            var fullButton = angular.element('<button type="button" class="btn btn-default btn-sm btn-small" unselectable="on" tabindex="-1">100%</button>');
+            fullButton.on('click', function(event){
+                event.preventDefault();
+                $element.css({
+                    'width': '100%',
+                    'height': ''
+                });
+                finishEdit();
+            });
+            var halfButton = angular.element('<button type="button" class="btn btn-default btn-sm btn-small" unselectable="on" tabindex="-1">50%&nbsp;</button>');
+            halfButton.on('click', function(event){
+                event.preventDefault();
+                $element.css({
+                    'width': '50%',
+                    'height': ''
+                });
+                finishEdit();
+            });
+            var quartButton = angular.element('<button type="button" class="btn btn-default btn-sm btn-small" unselectable="on" tabindex="-1">25%&nbsp;</button>');
+            quartButton.on('click', function(event){
+                event.preventDefault();
+                $element.css({
+                    'width': '25%',
+                    'height': ''
+                });
+                finishEdit();
+            });
+
+            buttonGroup.append(quartButton);
+            buttonGroup.append(halfButton);
+            buttonGroup.append(fullButton);
+            container.append(buttonGroup);
+
+            var deleteGroup = angular.element('<div class="btn-group tablePopupBtnGroup">');
+
+            var remove = angular.element('<button type="button" class="btn btn-danger btn-sm btn-small" unselectable="on" tabindex="-1"><i class="fa fa-trash-o"></i></button>');
+            remove.on('click', function(event){
+                event.preventDefault();
+                $element.remove();
+                finishEdit();
+            });
+            deleteGroup.append(remove);
+            container.append(deleteGroup);
+
+            editorScope.showPopover($element);
+            //this was making users have to double click, so i removed the resize functionality
+            // editorScope.showResizeOverlay($element);
         },
         aOnSelectAction: function(event, $element, editorScope){
             // setup the editor toolbar
@@ -894,6 +1089,50 @@ angular.module('textAngularSetup', [])
             action: taToolFunctions.imgOnSelectAction
         }
     });
+    taRegisterTool('insertTable', {
+        iconclass: "fa fa-table",
+        tooltiptext: "Insert Table",
+        action: function(deferred) {
+            var textAngular = this
+            var savedSelection = rangy.saveSelection()
+            $uibModal.open({
+                size: 'lg',
+                controller: 'InsertTableModalInstanceController',
+                template: '<modal class="insert-table tableModal">\n' +
+                    '  <header class="modal-header">\n' +
+                    '    <h3>Insert Table</h3>\n' +
+                    '  </header>\n' +
+                    '  <content class="modal-body">\n' +
+                    '    <div class="form-group tableModalForm">\n' +
+                    '      <label for="numberOfRows">Number of Rows</label> \n' +
+                    '      <input type="number" class="form-control" ng-model="newtable.row"  placeholder="Row count" name="row" required="" id="numberOfRows" />\n' +
+                    '    </div>       \n' +
+                    '    <div class="form-group tableModalForm">\n' +
+                    '      <label for="NumberOfColumns">Number of Columns</label>\n' +
+                    '      <input type="number" class="form-control" ng-model="newtable.col" placeholder="Column count" name="col" required="" id="NumberOfColumns" />\n' +
+                    '    </div>\n' +
+                    '  </content>\n' +
+                    '  <footer class="modal-footer">\n' +
+                    '    <button class="btn btn-default pull-left" ng-disabled="newTable.row == \'\' || newTable.col == \'\' || newTable.row < 1 || newTable.col < 1" ng-click="insertTable()">Insert</button>\n' +
+                    '  </footer>\n' +
+                    '</modal>'
+            }).result.then(function (result) {
+                    rangy.restoreSelection(savedSelection)
+                    textAngular.$editor().wrapSelection('insertHTML', result)
+                    deferred.resolve()
+                },
+                function () {
+                    rangy.restoreSelection(savedSelection)
+                    deferred.resolve()
+                }
+            );
+            return false;
+        },
+        onElementSelect: {
+            element: 'table',
+            action: taToolFunctions.tableOnSelectAction
+        }
+    });
     taRegisterTool('insertVideo', {
         iconclass: 'fa fa-youtube-play',
         tooltiptext: taTranslations.insertVideo.tooltip,
@@ -1010,4 +1249,39 @@ angular.module('textAngularSetup', [])
             return false;
         }
     });
+}])
+.controller('InsertTableModalInstanceController', ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
+
+    // Gets converted by createTable
+    $scope.newtable = {};
+
+    $scope.newtable.row = '';
+    $scope.newtable.col = '';
+
+    function createTable(tableParams) {
+        if(angular.isNumber(tableParams.row) && angular.isNumber(tableParams.col)
+            && tableParams.row > 0 && tableParams.col > 0){
+            var table = "<p><br/></p><p><br/></p><div class='TableBorder'><table class='table table-hover table-bordered freeTextTable'>";
+            var colWidth = 100/tableParams.col;
+            for (var idxRow = 0; idxRow < tableParams.row; idxRow++) {
+                var row = "<tr>";
+                for (var idxCol = 0; idxCol < tableParams.col; idxCol++) {
+                    row += "<td"
+                        + (idxRow == 0 ? ' style="width: ' + colWidth + '%;"' : '')
+                        +">&nbsp;</td>";
+                }
+                table += row + "</tr>";
+            }
+            return table + "</table></div><p><br/></p><p><br/></p>";
+        }
+    }
+
+    $scope.close = function () {
+        $uibModalInstance.dismiss()
+    }
+
+    $scope.insertTable = function() {
+        $uibModalInstance.close(createTable($scope.newtable));
+    }
+
 }]);
