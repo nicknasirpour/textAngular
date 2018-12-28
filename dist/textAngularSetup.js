@@ -268,7 +268,7 @@ angular.module('textAngularSetup', [])
         tooltip: 'Display characters Count'
     }
 })
-.factory('taToolFunctions', ['$window','taTranslations', function($window, taTranslations) {
+.factory('taToolFunctions', ['$window','taTranslations','$uibModal', function($window, taTranslations, $uibModal) {
     return {
         imgOnSelectAction: function(event, $element, editorScope){
             // setup the editor toolbar
