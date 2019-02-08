@@ -144,7 +144,7 @@ angular.module('textAngularSetup', [])
 // This is the element selector string that is used to catch click events within a taBind, prevents the default and $emits a 'ta-element-select' event
 // these are individually used in an angular.element().find() call. What can go here depends on whether you have full jQuery loaded or just jQLite with angularjs.
 // div is only used as div.ta-insert-video caught in filter.
-.value('taSelectableElements', ['a','img','table'])
+.value('taSelectableElements', ['a','img','table','td'])
 
 // This is an array of objects with the following options:
 //				selector: <string> a jqLite or jQuery selector string
@@ -266,9 +266,12 @@ angular.module('textAngularSetup', [])
     },
         charcount: {
         tooltip: 'Display characters Count'
+    },
+    hr: {
+        tooltip: 'Divider'
     }
 })
-.factory('taToolFunctions', ['$window','taTranslations', function($window, taTranslations) {
+.factory('taToolFunctions', ['$window','taTranslations','$rootScope',function($window, taTranslations, $rootScope) {
     return {
         imgOnSelectAction: function(event, $element, editorScope){
             // setup the editor toolbar
@@ -375,6 +378,92 @@ angular.module('textAngularSetup', [])
 
             editorScope.showPopover($element);
             editorScope.showResizeOverlay($element);
+        },
+        tdOnSelectAction: function(event, $element, editorScope){
+            var elementRow = $element.closest('tr')[0]
+            if(elementRow && elementRow.classList.contains('bl-strip')) {
+                return
+            }
+
+            var finishEdit = function () {
+                $('td.selected').removeClass('selected');
+                editorScope.updateTaBindtaTextElement();
+                editorScope.hidePopover();
+            };
+
+            $(document).one('click', function (event) {finishEdit();});
+            $('td').one('click', function (event) {finishEdit();});
+
+            editorScope.displayElements.popover.css('width', '275px');
+            var container = editorScope.displayElements.popoverContainer;
+            container.empty();
+
+            $element.addClass('selected');
+
+            $rootScope.$broadcast('RootscopeBroadcastTA', event, $element, editorScope);
+
+            var tableEditGroup = angular.element('<div class="btn-group tablePopupBtnGroup">');
+
+            var addRowButton = angular.element('<button type="button" class="btn btn-primary btn-sm btn-small" unselectable="on" tabindex="-1"><i class="fa fa-plus-square"></i>&nbsp;Row</button>');
+            addRowButton.on('click', function(event) {
+                event.preventDefault();
+                var row = $element.closest('tr').clone();
+                row.removeClass()
+                $element.parent().after(row);
+                finishEdit();
+            });
+
+            var remRowButton = angular.element('<button type="button" class="btn btn-warning btn-sm btn-small" unselectable="on" tabindex="-1"><i class="fa fa-minus-square"></i>&nbsp;Row</button>');
+            remRowButton.on('click', function(event){
+                event.preventDefault();
+                var ourRow = $element.parent();
+                var prevRow = $(ourRow).prev()[0];
+
+                if(prevRow && prevRow.classList && prevRow.classList.contains('bl-strip')) {
+                    prevRow.remove();
+                }
+                ourRow.remove();
+
+                window.focus();
+                if (document.activeElement) {
+                    document.activeElement.blur();
+                }
+                finishEdit();
+            });
+
+            tableEditGroup.append(addRowButton);
+            tableEditGroup.append(remRowButton);
+
+            container.append(tableEditGroup);
+
+
+            var tdAlignGroup = angular.element('<div class="btn-group tablePopupBtnGroup" style="float: right;">');
+
+            var alignLeftButton = angular.element('<button type="button" class="btn btn-default btn-sm btn-small" unselectable="on" tabindex="-1"><i class="fa fa-align-left"></i></button>');
+            alignLeftButton.on('click', function(event) {
+                event.preventDefault();
+                $element.attr('align', 'left');
+                $element.removeClass('text-right');
+                $element.addClass('text-left');
+                finishEdit();
+            });
+
+            var alignRightButton = angular.element('<button type="button" class="btn btn-default btn-sm btn-small" unselectable="on" tabindex="-1"><i class="fa fa-align-right"></i></button>');
+            alignRightButton.on('click', function(event) {
+                event.preventDefault();
+                $element.attr('align', 'right');
+                $element.removeClass('text-left');
+                $element.addClass('text-right');
+                finishEdit();
+            });
+
+            tdAlignGroup.append(alignLeftButton);
+            tdAlignGroup.append(alignRightButton);
+
+            container.append(tdAlignGroup);
+
+            editorScope.showPopover($element.closest('table'));
+            // editorScope.showResizeOverlay($element.closest('table'));
         },
         tableOnSelectAction: function(event, $element, editorScope){
 
@@ -1055,6 +1144,15 @@ angular.module('textAngularSetup', [])
         return false;
     };
 
+    taRegisterTool('hr', {
+        // buttontext: 'hr',
+        iconclass: 'fa fa-minus',
+        tooltiptext: taTranslations.hr.tooltip,
+        action: function(){
+            return this.$editor().wrapSelection('insertHTML', '<hr />', true);
+        }
+    })
+
     taRegisterTool('insertImage', {
         iconclass: 'fa fa-picture-o',
         tooltiptext: taTranslations.insertImage.tooltip,
@@ -1089,6 +1187,30 @@ angular.module('textAngularSetup', [])
             action: taToolFunctions.imgOnSelectAction
         }
     });
+    taRegisterTool('insertDetailList', {
+        iconclass: "fa fa-th-list",
+        tooltiptext: "Detailed list",
+        action: function(){
+            var table = '<p><br/></p>' +
+              '<table class="detail-list" width="100%" cellspacing="0" cellpadding="0" border="0">' +
+              ' <tr>' +
+              '     <td>Label</td>' +
+              '     <td class="text-left" align="left">Content</td>' +
+              ' </tr>' +
+              '</table>' +
+              '<p><br/></p>'
+
+            return this.$editor().wrapSelection('insertHTML', table)
+        },
+        // onElementSelect: {
+        //     element: 'table',
+        //     action: taToolFunctions.tableOnSelectAction
+        // }
+        onElementSelect: {
+            element: 'td',
+            action: taToolFunctions.tdOnSelectAction
+        }
+    })
     taRegisterTool('insertTable', {
         iconclass: "fa fa-table",
         tooltiptext: "Insert Table",

@@ -2956,7 +2956,7 @@ textAngular.directive("textAngular", [
                     text: angular.element("<div></div>"),
                     // other toolbased elements
                     scrollWindow: angular.element("<div class='ta-scroll-window'></div>"),
-                    popover: angular.element('<div class="popover fade bottom" style="max-width: none; width: 305px;"></div>'),
+                    popover: angular.element('<div class="popover top" style="max-width: none; width: 305px;"></div>'),
                     popoverArrow: angular.element('<div class="arrow"></div>'),
                     popoverContainer: angular.element('<div class="popover-content"></div>'),
                     resize: {

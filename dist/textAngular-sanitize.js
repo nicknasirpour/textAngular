@@ -598,7 +598,10 @@ function validCustomTag(tag, attrs, lkey, value){
         if(lkey === 'ta-insert-video' || lkey === 'allowfullscreen' || lkey === 'frameborder' || (lkey === 'contenteditable' && value === 'false')) return true;
     }
     if (tag === 'textarea' && attrs['bl-var']) {
-      if (lkey === 'bl-var' || lkey === 'disabled') return true;
+      if (lkey === 'bl-var' || lkey === 'disabled' || lkey === 'placeholder') return true;
+    }
+    if (tag === 'textarea' && attrs['bl-template']) {
+      if (lkey === 'bl-template' || lkey === 'disabled' || lkey === 'placeholder') return true;
     }
     if (tag === 'blockquote' && attrs['bl-section']) {
       if(lkey === 'bl-section') return true;
